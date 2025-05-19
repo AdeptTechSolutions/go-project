@@ -10,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-MODEL_PATH = "models/xgb_multioutput_model.pkl"
+MODEL_PATH = "models/xgb_multioutput_model_update_v1.pkl"
 SENTENCE_TRANSFORMER_MODEL = "all-MiniLM-L6-v2"
 TARGET_COLS = ["search_count", "click_count", "unique_clicks", "avg_rpc"]
 

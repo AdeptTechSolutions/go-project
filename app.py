@@ -10,9 +10,9 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-MODEL_PATH = "models/xgb_multioutput_model_update_v1.pkl"
+MODEL_PATH = "models/xgb_model_kw_filtered_df.pkl"
 SENTENCE_TRANSFORMER_MODEL = "all-MiniLM-L6-v2"
-TARGET_COLS = ["rps", "click_counts"]
+TARGET_COLS = ["click_count", "keyword_rps"]
 
 EMBEDDING_DIM = 384
 

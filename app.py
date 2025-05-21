@@ -10,7 +10,7 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-MODEL_PATH = "models/xgb_model_kw_filtered_df.pkl"
+MODEL_PATH = "models/xgb_model_kw_filtered_df_hotfix.pkl"
 SENTENCE_TRANSFORMER_MODEL = "all-MiniLM-L6-v2"
 TARGET_COLS = ["click_count", "keyword_rps"]
 

@@ -5,21 +5,20 @@ import torch
 from sentence_transformers import SentenceTransformer
 
 st.set_page_config(
-    page_title="KPP App",
+    page_title="RPS/RPC Prediction App",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
 MODEL_PATH = "models/xgb_model_kw_filtered_df_hotfix.pkl"
 SENTENCE_TRANSFORMER_MODEL = "all-MiniLM-L6-v2"
-TARGET_COLS = ["click_count", "keyword_rps"]
+TARGET_COLS = ["RPS", "RPC"]
 
 EMBEDDING_DIM = 384
 
-
 @st.cache_resource
 def load_models_and_device():
-    """Loads the SentenceTransformer and XGBoost models, and determines the device."""
+    """Loads the SentenceTransformer and XGBoost models, and determines the device for RPS/RPC prediction."""
     embedder_model = None
     xgboost_pipeline_model = None
     compute_device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -52,13 +51,17 @@ def load_models_and_device():
 
     return embedder_model, xgboost_pipeline_model, compute_device
 
-
 embedder, xgb_model, device = load_models_and_device()
-
 
 def predict_metrics_from_keyword(keyword_text: str):
     """
-    Generates embeddings for the keyword and predicts performance metrics.
+    Generates embeddings for the keyword and predicts RPS and RPC metrics.
+
+    Args:
+        keyword_text (str): The keyword to analyze for revenue predictions
+
+    Returns:
+        dict: Dictionary containing RPS and RPC predictions, or None if prediction fails
     """
     if not xgb_model or not embedder:
         st.error("Models are not fully loaded. Cannot perform prediction.")
@@ -81,7 +84,6 @@ def predict_metrics_from_keyword(keyword_text: str):
     results = dict(zip(TARGET_COLS, predictions_array[0]))
     return results
 
-
 _, center_col, _ = st.columns([0.1, 0.5, 0.1])
 with center_col:
     st.image("assets/logo.png")
@@ -89,9 +91,9 @@ with center_col:
 st.html(
     """
     <div style="text-align: center;">
-        Welcome! This app uses advanced AI models to predict potential performance metrics for a given keyword.
+        Welcome! This app uses advanced AI models to predict Revenue Per Search (RPS) and Revenue Per Click (RPC) metrics for a given keyword.
         <br>
-        Simply enter your keyword and see the estimated results.
+        Simply enter your keyword and see the estimated revenue performance.
     </div>
     """
 )
@@ -99,10 +101,10 @@ st.html(
 st.sidebar.header("About the Metrics")
 st.sidebar.markdown(
     """
-- **Search Count:** An estimate of how many times the keyword might be searched.
-- **Click Count:** An estimate of how many clicks ads related to this keyword might receive.
-- **Unique Clicks:** An estimate of the number of distinct users clicking on the ads.
-- **Avg RPC (Revenue Per Click):** An estimate of the average revenue generated per click.
+- **RPS (Revenue Per Search):** An estimate of the average revenue generated each time this keyword is searched.
+- **RPC (Revenue Per Click):** An estimate of the average revenue generated each time an ad for this keyword is clicked.
+
+These metrics help evaluate the monetization potential and value of keywords in advertising campaigns.
 """
 )
 st.sidebar.markdown("---")
@@ -123,27 +125,22 @@ if xgb_model and embedder:
     keyword_input = st.text_input(
         "🔑 Enter your keyword below:",
         placeholder="e.g., sustainable energy solutions, best travel cameras 2024",
-        help="Type the keyword you want to analyze.",
+        help="Type the keyword you want to analyze for RPS and RPC predictions.",
     )
 
-    if st.button("🚀 Predict Performance", type="primary", use_container_width=True):
+    if st.button("🚀 Predict Revenue Metrics", type="primary", use_container_width=True):
         if keyword_input.strip():
-            with st.spinner("🧠 Analyzing keyword and crunching numbers..."):
+            with st.spinner("🧠 Analyzing keyword and calculating revenue metrics..."):
                 predicted_values = predict_metrics_from_keyword(keyword_input)
 
             if predicted_values:
-                st.subheader("📈 Predicted Metrics")
+                st.subheader("💰 Predicted Revenue Metrics")
 
                 cols = st.columns(len(TARGET_COLS))
                 for i, (metric_name, value) in enumerate(predicted_values.items()):
-                    display_name = metric_name.replace("_", " ").title()
+                    display_name = metric_name
 
-                    if "count" in metric_name:
-                        formatted_val = f"{float(value):.2f}"
-                    elif "rpc" in metric_name:
-                        formatted_val = f"${float(value):.4f}"
-                    else:
-                        formatted_val = f"{float(value):.4f}"
+                    formatted_val = f"${float(value):.4f}"
 
                     cols[i].metric(label=display_name, value=formatted_val)
 
@@ -162,10 +159,8 @@ if xgb_model and embedder:
                     st.code(raw_output_str, language="text")
 
         else:
-            st.warning("🔔 Please enter a keyword to get predictions.")
+            st.warning("🔔 Please enter a keyword to get revenue predictions.")
 else:
     st.error(
         "🚨 Application critical error: One or more models could not be loaded. Please check the sidebar and console/logs for details. Ensure 'xgb_multioutput_model.pkl' is present and valid."
     )
-
-st.markdown("---")
